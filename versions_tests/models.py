@@ -1,5 +1,5 @@
 from django.db.models import CharField, IntegerField, Model, ForeignKey
-from django.db.models.deletion import DO_NOTHING, PROTECT, SET, SET_NULL
+from django.db.models.deletion import DO_NOTHING, PROTECT, SET, SET_NULL, CASCADE
 
 from versions.models import Versionable, VersionedManyToManyField, VersionedForeignKey
 
@@ -94,6 +94,12 @@ class NonFan(Versionable):
     team = VersionedForeignKey(Team, null=False, on_delete=DO_NOTHING)
 
     __str__ = versionable_description
+
+
+class MetaFan(Versionable):
+    name = CharField(max_length=200)
+    rabid = VersionedForeignKey(RabidFan, null=False, on_delete=CASCADE)
+    wizard = VersionedForeignKey(WizardFan, null=False, on_delete=CASCADE)
 
 
 ############################################

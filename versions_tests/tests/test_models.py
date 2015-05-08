@@ -31,7 +31,7 @@ from django.utils import six
 from versions.models import get_utc_now, ForeignKeyRequiresValueError, Versionable
 from versions_tests.models import (
     Award, B, C1, C2, C3, City, Classroom, Directory, Fan, Mascot, NonFan, Observer, Person, Player, Professor, Pupil,
-    RabidFan, Student, Subject, Teacher, Team, Wine, WineDrinker, WineDrinkerHat, WizardFan
+    RabidFan, MetaFan, Student, Subject, Teacher, Team, Wine, WineDrinker, WineDrinkerHat, WizardFan
 )
 
 
@@ -228,6 +228,15 @@ class DeletionHandlerTest(TestCase):
         p1.delete()
         self.assertEqual(1, through.objects.filter(player_id=p1.pk).count())
         self.assertEqual(0, through.objects.current.filter(player_id=p1.pk).count())
+
+    def test_on_delete_cascade(self):
+        rabid = RabidFan.objects.create(name='rabid', team=self.team)
+        wizard = WizardFan.objects.create(name='wizard', team=self.team)
+        metafan = MetaFan.objects.create(name='meta', rabid=rabid, wizard=wizard)
+
+        rabid.delete()
+        wizard.delete()
+
 
 class CurrentVersionTest(TestCase):
     def setUp(self):
