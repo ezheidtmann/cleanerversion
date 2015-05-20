@@ -46,6 +46,13 @@ from versions.deletion import VersionedCollector
 def get_utc_now():
     return datetime.datetime.utcnow().replace(tzinfo=utc)
 
+def running_in_deserializer():
+    import traceback
+    for path, line_no, function_name, code_line in reversed(traceback.extract_stack()):
+        if path.endswith('django/core/serializers/base.py'):
+            return True
+
+    return False
 
 QueryTime = namedtuple('QueryTime', 'time active')
 
@@ -865,7 +872,7 @@ def create_versioned_many_related_manager(superclass, rel):
 
         if 'add' in dir(many_related_manager_klass):
             def add(self, *objs):
-                if not self.instance.is_current:
+                if not self.instance.is_current and not running_in_deserializer():
                     raise SuspiciousOperation(
                         "Adding many-to-many related objects is only possible on the current version")
 
@@ -958,7 +965,7 @@ class VersionedReverseManyRelatedObjectsDescriptor(ReverseManyRelatedObjectsDesc
         :param value: iterable of items to set
         """
 
-        if not instance.is_current:
+        if not instance.is_current and not running_in_deserializer():
             raise SuspiciousOperation(
                 "Related values can only be directly set on the current version of an object")
 
